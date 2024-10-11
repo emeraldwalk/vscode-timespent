@@ -1,6 +1,7 @@
 import { nanoid } from 'nanoid';
-import type { TimeEntry, UserActivityEvent } from '../types';
+import fs from 'node:fs';
 import type { Database } from 'sql.js';
+import type { TimeEntry, UserActivityEvent } from '../types';
 import { ServiceBase } from './ServiceBase';
 import { saveDb } from '../utils/dbUtils';
 
@@ -83,6 +84,11 @@ export class TimeEntryService extends ServiceBase {
       console.log('Running:', sql);
 
       this._db.run(sql);
+
+      fs.appendFileSync(
+        this._dbPath.replace(/\.sqlite$/, '.txt'),
+        `${JSON.stringify(this._timeEntry)}\n`,
+      );
 
       this._timeEntry = undefined;
 
