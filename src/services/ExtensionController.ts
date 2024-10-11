@@ -25,16 +25,8 @@ export class ExtensionController extends ServiceBase {
     const dbPath = path.join(wkspPath, 'timespent.sqlite');
     this._db = await initDb(dbPath);
 
-    this.registerDisposable({
-      dispose: () => {
-        if (this._db == null) {
-          return;
-        }
-        saveDb(this._db, dbPath);
-      },
-    });
-
     this._timeEntryService = new TimeEntryService(this._db, dbPath);
+    this.registerDisposable(this._timeEntryService);
 
     vscode.window.onDidChangeTextEditorSelection(
       this.onDidUserActivityOccur('editorSelectionChange'),

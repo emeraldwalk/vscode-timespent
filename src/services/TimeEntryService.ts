@@ -11,6 +11,12 @@ export class TimeEntryService extends ServiceBase {
     super();
     this._db = db;
     this._dbPath = dbPath;
+
+    this.registerDisposable({
+      dispose: () => {
+        this.storeEntry();
+      },
+    });
   }
   private readonly _db: Database;
   private readonly _dbPath: string;
