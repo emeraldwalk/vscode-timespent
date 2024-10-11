@@ -1,3 +1,4 @@
+import { nanoid } from 'nanoid';
 import type { TimeEntry, UserActivityEvent } from '../types';
 
 export class TimeEntryService {
@@ -15,7 +16,7 @@ export class TimeEntryService {
 
     if (this._timeEntry == null) {
       this._timeEntry = {
-        id: 'xx',
+        id: nanoid(),
         fileUri: event.fileUri,
         start: event.instant,
       };
