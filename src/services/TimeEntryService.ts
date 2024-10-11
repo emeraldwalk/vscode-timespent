@@ -55,7 +55,7 @@ export class TimeEntryService extends ServiceBase {
     }, DEBOUNCE_TIMEOUT_MS);
   };
 
-  storeEntry = (clearAfterUpdate: boolean) => {
+  storeEntry = (finalizeEntry: boolean) => {
     if (this._timeEntry == null) {
       return;
     }
@@ -89,7 +89,7 @@ export class TimeEntryService extends ServiceBase {
 
       this._db.run(sql);
 
-      if (clearAfterUpdate) {
+      if (finalizeEntry) {
         fs.appendFileSync(
           this._dbPath.replace(/\.sqlite$/, '.csv'),
           `${[`"${uid}"`, end - start, start, end, `"${uri}"`].join(',')}\n`,
@@ -99,7 +99,7 @@ export class TimeEntryService extends ServiceBase {
       saveDb(this._db, this._dbPath);
     }
 
-    if (clearAfterUpdate) {
+    if (finalizeEntry) {
       this._timeEntry = undefined;
     }
   };
