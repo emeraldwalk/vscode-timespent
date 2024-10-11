@@ -24,11 +24,16 @@ export class ExtensionController extends ServiceBase {
     }
 
     const storageDir = path.join(wkspPath, '.vscode', '_timespent');
+    const dbPath = path.join(storageDir, 'timespent.sqlite');
+
     if (!fs.existsSync(storageDir)) {
       fs.mkdirSync(storageDir, { recursive: true });
       fs.writeFileSync(path.join(storageDir, '.gitignore'), '*\n');
+      fs.writeFileSync(
+        dbPath.replace(/\.sqlite$/, '.csv'),
+        'UID,Elapsed,Start,End,Uri\n',
+      );
     }
-    const dbPath = path.join(storageDir, 'timespent.sqlite');
 
     this._db = await initDb(dbPath);
 
@@ -41,6 +46,8 @@ export class ExtensionController extends ServiceBase {
     vscode.window.onDidChangeActiveTextEditor(
       this.onDidUserActivityOccur('activeTextEditorChange'),
     );
+
+    this.onDidUserActivityOccur('extensionInit')();
   };
 
   onDidUserActivityOccur = (eventType: UserActivityEventType) => {

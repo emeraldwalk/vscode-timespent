@@ -2,7 +2,8 @@ import * as vscode from 'vscode';
 
 export type UserActivityEventType =
   | 'activeTextEditorChange'
-  | 'editorSelectionChange';
+  | 'editorSelectionChange'
+  | 'extensionInit';
 
 export interface UserActivityEvent {
   type: UserActivityEventType;

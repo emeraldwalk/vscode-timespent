@@ -15,10 +15,11 @@ export class TimeEntryService extends ServiceBase {
 
     this.registerDisposable({
       dispose: () => {
-        this.storeEntry();
+        this.storeEntry(true);
       },
     });
   }
+
   private readonly _db: Database;
   private readonly _dbPath: string;
   private _debounceTimeout?: NodeJS.Timeout;
@@ -29,8 +30,8 @@ export class TimeEntryService extends ServiceBase {
       this._timeEntry != null &&
       this._timeEntry.fileUri?.toString() !== event.fileUri?.toString()
     ) {
-      this._timeEntry.end = new Date().valueOf();
-      this.storeEntry();
+      this._timeEntry.end = event.instant;
+      this.storeEntry(true);
       this._timeEntry = undefined;
     }
 
@@ -41,7 +42,7 @@ export class TimeEntryService extends ServiceBase {
         start: event.instant,
       };
 
-      this.storeEntry();
+      this.storeEntry(false);
     }
 
     clearTimeout(this._debounceTimeout);
@@ -49,16 +50,17 @@ export class TimeEntryService extends ServiceBase {
     this._debounceTimeout = setTimeout(() => {
       if (this._timeEntry) {
         this._timeEntry.end = new Date().valueOf() - DEBOUNCE_TIMEOUT_MS;
-        this.storeEntry();
+        this.storeEntry(true);
       }
     }, DEBOUNCE_TIMEOUT_MS);
   };
 
-  storeEntry = () => {
+  storeEntry = (clearAfterUpdate: boolean) => {
     if (this._timeEntry == null) {
       return;
     }
 
+    // Create
     if (this._timeEntry.end == null) {
       const { uid, fileUri, start } = this._timeEntry;
       const uri = fileUri?.toString() ?? '';
@@ -69,9 +71,11 @@ export class TimeEntryService extends ServiceBase {
       console.log('Running:', sql);
 
       this._db.run(sql);
-    } else {
+    }
+    // Update
+    else {
       const { uid, fileUri, start, end } = this._timeEntry;
-      const uri = fileUri?.toString() ?? '';
+      const uri = fileUri?.fsPath.toString() ?? '';
 
       const sql = `UPDATE time_entries
          SET
@@ -86,13 +90,15 @@ export class TimeEntryService extends ServiceBase {
       this._db.run(sql);
 
       fs.appendFileSync(
-        this._dbPath.replace(/\.sqlite$/, '.txt'),
-        `${JSON.stringify(this._timeEntry)}\n`,
+        this._dbPath.replace(/\.sqlite$/, '.csv'),
+        `${[`"${uid}"`, end - start, start, end, `"${uri}"`].join(',')}\n`,
       );
 
-      this._timeEntry = undefined;
-
       saveDb(this._db, this._dbPath);
+    }
+
+    if (clearAfterUpdate) {
+      this._timeEntry = undefined;
     }
   };
 }
