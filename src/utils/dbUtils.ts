@@ -3,10 +3,7 @@ import path from 'node:path';
 import initSqlJs, { type Database } from 'sql.js';
 
 export async function initDb(filePath: string): Promise<Database> {
-  const SQL = await initSqlJs({
-    locateFile: file =>
-      path.join(__dirname, `../node_modules/sql.js/dist/${file}`),
-  });
+  const SQL = await initSqlJs();
 
   if (fs.existsSync(filePath)) {
     const filebuffer = fs.readFileSync(filePath);

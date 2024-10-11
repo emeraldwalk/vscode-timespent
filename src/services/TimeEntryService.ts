@@ -3,7 +3,8 @@ import type { TimeEntry, UserActivityEvent } from '../types';
 import type { Database } from 'sql.js';
 import { ServiceBase } from './ServiceBase';
 import { saveDb } from '../utils/dbUtils';
-// const initSqlJs = require('sql-wasm.js');
+
+const DEBOUNCE_TIMEOUT_MS = 60000;
 
 export class TimeEntryService extends ServiceBase {
   constructor(db: Database, dbPath: string) {
@@ -40,10 +41,10 @@ export class TimeEntryService extends ServiceBase {
 
     this._debounceTimeout = setTimeout(() => {
       if (this._timeEntry) {
-        this._timeEntry.end = new Date().valueOf();
+        this._timeEntry.end = new Date().valueOf() - DEBOUNCE_TIMEOUT_MS;
         this.storeEntry();
       }
-    }, 3000);
+    }, DEBOUNCE_TIMEOUT_MS);
   };
 
   storeEntry = () => {
