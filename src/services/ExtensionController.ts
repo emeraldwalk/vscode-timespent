@@ -5,7 +5,7 @@ import path from 'node:path';
 import { ServiceBase } from './ServiceBase';
 import type { UserActivityEventType } from '../types';
 import { TimeEntryService } from './TimeEntryService';
-import { initDb, saveDb } from '../utils/dbUtils';
+import { initDb } from '../utils/dbUtils';
 
 export class ExtensionController extends ServiceBase {
   constructor() {

@@ -89,10 +89,12 @@ export class TimeEntryService extends ServiceBase {
 
       this._db.run(sql);
 
-      fs.appendFileSync(
-        this._dbPath.replace(/\.sqlite$/, '.csv'),
-        `${[`"${uid}"`, end - start, start, end, `"${uri}"`].join(',')}\n`,
-      );
+      if (clearAfterUpdate) {
+        fs.appendFileSync(
+          this._dbPath.replace(/\.sqlite$/, '.csv'),
+          `${[`"${uid}"`, end - start, start, end, `"${uri}"`].join(',')}\n`,
+        );
+      }
 
       saveDb(this._db, this._dbPath);
     }
