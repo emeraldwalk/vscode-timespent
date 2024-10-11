@@ -23,9 +23,10 @@ export class ExtensionController extends ServiceBase {
       return;
     }
 
-    const storageDir = path.join(wkspPath, '_timespent');
+    const storageDir = path.join(wkspPath, '.vscode', '_timespent');
     if (!fs.existsSync(storageDir)) {
-      fs.mkdirSync(storageDir);
+      fs.mkdirSync(storageDir, { recursive: true });
+      fs.writeFileSync(path.join(storageDir, '.gitignore'), '*\n');
     }
     const dbPath = path.join(storageDir, 'timespent.sqlite');
 
