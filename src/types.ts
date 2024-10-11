@@ -11,7 +11,7 @@ export interface UserActivityEvent {
 }
 
 export interface TimeEntry {
-  id: string;
+  uid: string;
   fileUri?: vscode.Uri;
   start: number;
   end?: number;

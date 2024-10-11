@@ -1,11 +1,40 @@
 import * as vscode from 'vscode';
+import { type Database } from 'sql.js';
+import path from 'node:path';
 import { ServiceBase } from './ServiceBase';
 import type { UserActivityEventType } from '../types';
 import { TimeEntryService } from './TimeEntryService';
+import { initDb, saveDb } from '../utils/dbUtils';
 
 export class ExtensionController extends ServiceBase {
   constructor() {
     super();
+
+    void this.init();
+  }
+
+  private _db: Database | null = null;
+  private _timeEntryService: TimeEntryService | null = null;
+
+  init = async () => {
+    const wkspPath = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
+    if (wkspPath == null) {
+      return;
+    }
+
+    const dbPath = path.join(wkspPath, 'timespent.sqlite');
+    this._db = await initDb(dbPath);
+
+    this.registerDisposable({
+      dispose: () => {
+        if (this._db == null) {
+          return;
+        }
+        saveDb(this._db, dbPath);
+      },
+    });
+
+    this._timeEntryService = new TimeEntryService(this._db, dbPath);
 
     vscode.window.onDidChangeTextEditorSelection(
       this.onDidUserActivityOccur('editorSelectionChange'),
@@ -13,9 +42,7 @@ export class ExtensionController extends ServiceBase {
     vscode.window.onDidChangeActiveTextEditor(
       this.onDidUserActivityOccur('activeTextEditorChange'),
     );
-  }
-
-  private readonly _timeEntryService = new TimeEntryService();
+  };
 
   onDidUserActivityOccur = (eventType: UserActivityEventType) => {
     return () => {
@@ -27,7 +54,7 @@ export class ExtensionController extends ServiceBase {
         return;
       }
 
-      this._timeEntryService.handleEvent({
+      this._timeEntryService?.handleEvent({
         type: eventType,
         fileUri,
         instant: new Date().valueOf(),

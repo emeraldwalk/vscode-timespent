@@ -38,6 +38,7 @@
   "devDependencies": {
     "@types/mocha": "^10.0.8",
     "@types/node": "20.x",
+    "@types/sql.js": "^1.4.9",
     "@types/vscode": "^1.94.0",
     "@typescript-eslint/eslint-plugin": "^8.7.0",
     "@typescript-eslint/parser": "^8.7.0",
@@ -49,6 +50,7 @@
     "typescript": "^5.6.2"
   },
   "dependencies": {
-    "nanoid": "^5.0.7"
+    "nanoid": "^5.0.7",
+    "sql.js": "^1.11.0"
   }
 }

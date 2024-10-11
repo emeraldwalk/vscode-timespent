@@ -1,11 +1,13 @@
 import * as vscode from 'vscode';
 import { ExtensionController } from '~/services/ExtensionController';
 
+let controller: ExtensionController;
+
 export function activate(context: vscode.ExtensionContext) {
   console.log('Activating time-spent extension.');
-
-  const controller = new ExtensionController();
-  context.subscriptions.push(controller);
+  controller = new ExtensionController();
 }
 
-export function deactivate() {}
+export async function deactivate() {
+  await controller?.dispose();
+}

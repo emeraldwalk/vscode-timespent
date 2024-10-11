@@ -1,7 +1,18 @@
 import { nanoid } from 'nanoid';
 import type { TimeEntry, UserActivityEvent } from '../types';
+import type { Database } from 'sql.js';
+import { ServiceBase } from './ServiceBase';
+import { saveDb } from '../utils/dbUtils';
+// const initSqlJs = require('sql-wasm.js');
 
-export class TimeEntryService {
+export class TimeEntryService extends ServiceBase {
+  constructor(db: Database, dbPath: string) {
+    super();
+    this._db = db;
+    this._dbPath = dbPath;
+  }
+  private readonly _db: Database;
+  private readonly _dbPath: string;
   private _debounceTimeout?: NodeJS.Timeout;
   private _timeEntry?: TimeEntry;
 
@@ -10,13 +21,14 @@ export class TimeEntryService {
       this._timeEntry != null &&
       this._timeEntry.fileUri?.toString() !== event.fileUri?.toString()
     ) {
+      this._timeEntry.end = new Date().valueOf();
       this.storeEntry();
       this._timeEntry = undefined;
     }
 
     if (this._timeEntry == null) {
       this._timeEntry = {
-        id: nanoid(),
+        uid: nanoid(),
         fileUri: event.fileUri,
         start: event.instant,
       };
@@ -40,10 +52,34 @@ export class TimeEntryService {
     }
 
     if (this._timeEntry.end == null) {
-      console.log('[TESTING] insert', this._timeEntry);
+      const { uid, fileUri, start } = this._timeEntry;
+      const uri = fileUri?.toString() ?? '';
+
+      const sql = `INSERT
+      INTO time_entries (uid, uri, start)
+      VALUES ('${uid}', '${uri}', ${start});`;
+      console.log('Running:', sql);
+
+      this._db.run(sql);
     } else {
-      console.log('[TESTING] update', this._timeEntry);
+      const { uid, fileUri, start, end } = this._timeEntry;
+      const uri = fileUri?.toString() ?? '';
+
+      const sql = `UPDATE time_entries
+         SET
+         uri='${uri}',
+         start=${start},
+         end=${end},
+         duration=${end - start}
+         WHERE uid='${uid}';`;
+
+      console.log('Running:', sql);
+
+      this._db.run(sql);
+
       this._timeEntry = undefined;
+
+      saveDb(this._db, this._dbPath);
     }
   };
 }
