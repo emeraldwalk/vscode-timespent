@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { type Database } from 'sql.js';
+import fs from 'node:fs';
 import path from 'node:path';
 import { ServiceBase } from './ServiceBase';
 import type { UserActivityEventType } from '../types';
@@ -22,7 +23,12 @@ export class ExtensionController extends ServiceBase {
       return;
     }
 
-    const dbPath = path.join(wkspPath, 'timespent.sqlite');
+    const storageDir = path.join(wkspPath, '_timespent');
+    if (!fs.existsSync(storageDir)) {
+      fs.mkdirSync(storageDir);
+    }
+    const dbPath = path.join(storageDir, 'timespent.sqlite');
+
     this._db = await initDb(dbPath);
 
     this._timeEntryService = new TimeEntryService(this._db, dbPath);
