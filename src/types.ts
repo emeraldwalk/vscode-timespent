@@ -15,5 +15,4 @@ export interface TimeEntry {
   uid: string;
   fileUri?: vscode.Uri;
   start: number;
-  end?: number;
 }

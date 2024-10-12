@@ -1,11 +1,10 @@
 import * as vscode from 'vscode';
 import { type Database } from 'sql.js';
-import fs from 'node:fs';
-import path from 'node:path';
 import { ServiceBase } from './ServiceBase';
 import type { UserActivityEventType } from '../types';
 import { TimeEntryService } from './TimeEntryService';
 import { initDb } from '../utils/dbUtils';
+import { initStorage } from '../utils/storageutils';
 
 export class ExtensionController extends ServiceBase {
   constructor() {
@@ -18,21 +17,9 @@ export class ExtensionController extends ServiceBase {
   private _timeEntryService: TimeEntryService | null = null;
 
   init = async () => {
-    const wkspPath = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
-    if (wkspPath == null) {
+    const dbPath = initStorage()?.dbPath;
+    if (dbPath == null) {
       return;
-    }
-
-    const storageDir = path.join(wkspPath, '.vscode', '_timespent');
-    const dbPath = path.join(storageDir, 'timespent.sqlite');
-
-    if (!fs.existsSync(storageDir)) {
-      fs.mkdirSync(storageDir, { recursive: true });
-      fs.writeFileSync(path.join(storageDir, '.gitignore'), '*\n');
-      fs.writeFileSync(
-        dbPath.replace(/\.sqlite$/, '.csv'),
-        'UID,Elapsed,Start,End,Uri\n',
-      );
     }
 
     this._db = await initDb(dbPath);

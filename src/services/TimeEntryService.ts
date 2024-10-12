@@ -6,6 +6,7 @@ import { ServiceBase } from './ServiceBase';
 import { saveDb } from '../utils/dbUtils';
 
 const DEBOUNCE_TIMEOUT_MS = 60000;
+const HEARTBEAT_MS = 15000;
 
 export class TimeEntryService extends ServiceBase {
   constructor(db: Database, dbPath: string) {
@@ -13,21 +14,19 @@ export class TimeEntryService extends ServiceBase {
     this._db = db;
     this._dbPath = dbPath;
 
-    // Update entry in db every 15 seconds
+    // Update entry in an interval
     const interval = setInterval(() => {
       if (this._timeEntry) {
-        this._timeEntry.end = new Date().valueOf();
-        this.storeEntry(false);
+        this.storeEntry(false, new Date().valueOf());
       }
-    }, 15000);
+    }, HEARTBEAT_MS);
 
     this.registerDisposable({
       dispose: () => {
         clearInterval(interval);
 
         if (this._timeEntry) {
-          this._timeEntry.end = new Date().valueOf();
-          this.storeEntry(true);
+          this.storeEntry(true, new Date().valueOf());
         }
       },
     });
@@ -43,8 +42,7 @@ export class TimeEntryService extends ServiceBase {
       this._timeEntry != null &&
       this._timeEntry.fileUri?.toString() !== event.fileUri?.toString()
     ) {
-      this._timeEntry.end = event.instant;
-      this.storeEntry(true);
+      this.storeEntry(true, event.instant);
       this._timeEntry = undefined;
     }
 
@@ -55,25 +53,24 @@ export class TimeEntryService extends ServiceBase {
         start: event.instant,
       };
 
-      this.storeEntry(false);
+      this.storeEntry(false, null);
     }
 
     clearTimeout(this._debounceTimeout);
 
     this._debounceTimeout = setTimeout(() => {
       if (this._timeEntry) {
-        this._timeEntry.end = new Date().valueOf() - DEBOUNCE_TIMEOUT_MS;
-        this.storeEntry(true);
+        this.storeEntry(true, new Date().valueOf() - DEBOUNCE_TIMEOUT_MS);
       }
     }, DEBOUNCE_TIMEOUT_MS);
   };
 
-  storeEntry = (finalizeEntry: boolean) => {
+  storeEntry = (finalizeEntry: boolean, end: number | null) => {
     if (this._timeEntry == null) {
       return;
     }
 
-    const { uid, fileUri, start, end } = this._timeEntry;
+    const { uid, fileUri, start } = this._timeEntry;
     const uri = fileUri?.toString() ?? '';
 
     console.log(
