@@ -13,9 +13,22 @@ export class TimeEntryService extends ServiceBase {
     this._db = db;
     this._dbPath = dbPath;
 
+    // Update entry in db every 15 seconds
+    const interval = setInterval(() => {
+      if (this._timeEntry) {
+        this._timeEntry.end = new Date().valueOf();
+        this.storeEntry(false);
+      }
+    }, 15000);
+
     this.registerDisposable({
       dispose: () => {
-        this.storeEntry(true);
+        clearInterval(interval);
+
+        if (this._timeEntry) {
+          this._timeEntry.end = new Date().valueOf();
+          this.storeEntry(true);
+        }
       },
     });
   }
@@ -60,23 +73,24 @@ export class TimeEntryService extends ServiceBase {
       return;
     }
 
-    // Create
-    if (this._timeEntry.end == null) {
-      const { uid, fileUri, start } = this._timeEntry;
-      const uri = fileUri?.toString() ?? '';
+    const { uid, fileUri, start, end } = this._timeEntry;
+    const uri = fileUri?.toString() ?? '';
 
+    console.log(
+      end == null ? 'Inserting:' : 'Updating:',
+      JSON.stringify(this._timeEntry),
+    );
+
+    // Create
+    if (end == null) {
       const sql = `INSERT
       INTO time_entries (uid, uri, start)
       VALUES ('${uid}', '${uri}', ${start});`;
-      console.log('Running:', sql);
 
       this._db.run(sql);
     }
     // Update
     else {
-      const { uid, fileUri, start, end } = this._timeEntry;
-      const uri = fileUri?.fsPath.toString() ?? '';
-
       const sql = `UPDATE time_entries
          SET
          uri='${uri}',
@@ -84,8 +98,6 @@ export class TimeEntryService extends ServiceBase {
          end=${end},
          duration=${end - start}
          WHERE uid='${uid}';`;
-
-      console.log('Running:', sql);
 
       this._db.run(sql);
 
