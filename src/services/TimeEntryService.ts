@@ -3,10 +3,14 @@ import fs from 'node:fs';
 import type { Database } from 'sql.js';
 import type { TimeEntry, UserActivityEvent } from '../types';
 import { ServiceBase } from './ServiceBase';
-import { saveDb } from '../utils/dbUtils';
+import { saveDb } from '../utils/storageutils';
 
-const DEBOUNCE_TIMEOUT_MS = 60000;
-const HEARTBEAT_MS = 15000;
+const HEARTBEAT_MS = 60000;
+const INACTIVITY_TIMEOUT_MS = HEARTBEAT_MS * 1.5;
+
+function now() {
+  return new Date().valueOf();
+}
 
 export class TimeEntryService extends ServiceBase {
   constructor(db: Database, dbPath: string) {
@@ -17,7 +21,7 @@ export class TimeEntryService extends ServiceBase {
     // Update entry in an interval
     const interval = setInterval(() => {
       if (this._timeEntry) {
-        this.storeEntry(false, new Date().valueOf());
+        this.storeEntry(false, now());
       }
     }, HEARTBEAT_MS);
 
@@ -26,7 +30,7 @@ export class TimeEntryService extends ServiceBase {
         clearInterval(interval);
 
         if (this._timeEntry) {
-          this.storeEntry(true, new Date().valueOf());
+          this.storeEntry(true, now());
         }
       },
     });
@@ -35,7 +39,7 @@ export class TimeEntryService extends ServiceBase {
   private readonly _db: Database;
   private readonly _dbPath: string;
   private _debounceTimeout?: NodeJS.Timeout;
-  private _timeEntry?: TimeEntry;
+  private _timeEntry: TimeEntry | null = null;
 
   handleEvent = (event: UserActivityEvent) => {
     if (
@@ -43,7 +47,7 @@ export class TimeEntryService extends ServiceBase {
       this._timeEntry.fileUri?.toString() !== event.fileUri?.toString()
     ) {
       this.storeEntry(true, event.instant);
-      this._timeEntry = undefined;
+      this._timeEntry = null;
     }
 
     if (this._timeEntry == null) {
@@ -58,11 +62,14 @@ export class TimeEntryService extends ServiceBase {
 
     clearTimeout(this._debounceTimeout);
 
+    // Once activity timer has been exceeded, clear current time entry.
+    // Since activity timer is > heartbeat timer, we should know at least
+    // 1 update has been stored
     this._debounceTimeout = setTimeout(() => {
       if (this._timeEntry) {
-        this.storeEntry(true, new Date().valueOf() - DEBOUNCE_TIMEOUT_MS);
+        this._timeEntry = null;
       }
-    }, DEBOUNCE_TIMEOUT_MS);
+    }, INACTIVITY_TIMEOUT_MS);
   };
 
   storeEntry = (finalizeEntry: boolean, end: number | null) => {
@@ -109,7 +116,7 @@ export class TimeEntryService extends ServiceBase {
     }
 
     if (finalizeEntry) {
-      this._timeEntry = undefined;
+      this._timeEntry = null;
     }
   };
 }

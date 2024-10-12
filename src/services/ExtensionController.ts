@@ -3,7 +3,7 @@ import { type Database } from 'sql.js';
 import { ServiceBase } from './ServiceBase';
 import type { UserActivityEventType } from '../types';
 import { TimeEntryService } from './TimeEntryService';
-import { initDb } from '../utils/dbUtils';
+import { initDb } from '../utils/storageutils';
 import { initStorage } from '../utils/storageutils';
 
 export class ExtensionController extends ServiceBase {
