@@ -1,8 +1,23 @@
 import * as vscode from 'vscode';
 import fs from 'node:fs';
 import path from 'node:path';
-import initSqlJs, { type Database } from 'sql.js';
+import initSqlJs, { type Database, type QueryExecResult } from 'sql.js';
 import type { SplitPaths } from '../types';
+
+export function dailySummary(db: Database): QueryExecResult[] {
+  return db.exec(
+    `SELECT date, filePath, fileTotal, SUM(fileTotal) OVER(PARTITION BY date)
+    FROM (
+      SELECT date,
+      filePath,
+      SUM(duration) as fileTotal,
+      SUM(duration) OVER(PARTITION BY date)
+      FROM time_entries
+      GROUP BY date, filePath
+    )
+    ORDER BY date DESC, filePath;`,
+  );
+}
 
 export function initStorage(): {
   storageDir: string;

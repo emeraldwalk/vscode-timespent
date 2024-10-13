@@ -14,3 +14,7 @@ export function date(dateTimeValue: number): number {
     dateTime.getDate(),
   ).valueOf();
 }
+
+export function timeStr(dateTimeValue: unknown): string {
+  return new Date(Number(dateTimeValue)).toISOString().substring(11, 19);
+}

@@ -5,6 +5,7 @@ import type { UserActivityEventType } from '../types';
 import { TimeEntryService } from './TimeEntryService';
 import { initDb } from '../utils/storageutils';
 import { initStorage } from '../utils/storageutils';
+import { timeStr } from '../utils/dateUtils';
 
 export class ExtensionController extends ServiceBase {
   constructor() {
@@ -14,6 +15,7 @@ export class ExtensionController extends ServiceBase {
   }
 
   private _db: Database | null = null;
+  private _outputChannel: vscode.OutputChannel | null = null;
   private _timeEntryService: TimeEntryService | null = null;
 
   init = async () => {
@@ -21,6 +23,8 @@ export class ExtensionController extends ServiceBase {
     if (dbPath == null) {
       return;
     }
+
+    this._outputChannel = vscode.window.createOutputChannel('Time Spent');
 
     this._db = await initDb(dbPath);
 
@@ -32,6 +36,11 @@ export class ExtensionController extends ServiceBase {
     );
     vscode.window.onDidChangeActiveTextEditor(
       this.onDidUserActivityOccur('activeTextEditorChange'),
+    );
+
+    vscode.commands.registerCommand(
+      'time-spent.dailyWorkspaceSummary',
+      this.onShowDailyWorkspaceSummary,
     );
 
     this.onDidUserActivityOccur('extensionInit')();
@@ -53,5 +62,35 @@ export class ExtensionController extends ServiceBase {
         instant: new Date().valueOf(),
       });
     };
+  };
+
+  onShowDailyWorkspaceSummary = () => {
+    if (this._outputChannel == null) {
+      return;
+    }
+
+    const [result] = this._timeEntryService?.showDailySummary().values() ?? [];
+    if (result == null) {
+      return;
+    }
+
+    this._outputChannel.show(true);
+
+    let curDateStr: string | null = null;
+    for (const [date, filePath, fileTotal, dailyTotal] of result.values) {
+      const dateStr = new Date(Number(date)).toISOString().substring(0, 10);
+      if (dateStr !== curDateStr) {
+        const dailyTotalM = timeStr(dailyTotal);
+        this._outputChannel.appendLine(
+          `--- ${dateStr} ---\n${dailyTotalM} - Total\n------------------`,
+        );
+      }
+
+      curDateStr = dateStr;
+
+      this._outputChannel.appendLine(
+        [timeStr(fileTotal), filePath].join(' - '),
+      );
+    }
   };
 }

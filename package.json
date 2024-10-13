@@ -17,8 +17,8 @@
   "contributes": {
     "commands": [
       {
-        "command": "time-spent.helloWorld",
-        "title": "Hello World"
+        "command": "time-spent.dailyWorkspaceSummary",
+        "title": "Time Spent: Daily Workspace Summary"
       }
     ]
   },

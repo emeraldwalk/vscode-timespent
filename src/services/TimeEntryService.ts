@@ -1,9 +1,9 @@
 import { nanoid } from 'nanoid';
 import fs from 'node:fs';
-import type { Database } from 'sql.js';
+import type { Database, QueryExecResult } from 'sql.js';
 import type { TimeEntry, UserActivityEvent } from '../types';
 import { ServiceBase } from './ServiceBase';
-import { saveDb, splitUriPath } from '../utils/storageutils';
+import { dailySummary, saveDb, splitUriPath } from '../utils/storageutils';
 import { date, now } from '../utils/dateUtils';
 
 const HEARTBEAT_MS = 60000;
@@ -67,6 +67,10 @@ export class TimeEntryService extends ServiceBase {
         this._timeEntry = null;
       }
     }, INACTIVITY_TIMEOUT_MS);
+  };
+
+  showDailySummary = (): QueryExecResult[] => {
+    return dailySummary(this._db);
   };
 
   storeEntry = (finalizeEntry: boolean, end: number | null) => {
