@@ -68,15 +68,21 @@ export async function initDb(filePath: string): Promise<Database> {
     );`,
   );
 
-  saveDb(db, filePath);
+  flushDb(db, filePath, true);
 
   return db;
 }
 
-export function saveDb(db: Database, filePath: string): void {
-  const data = db.export();
-  const buffer = Buffer.from(data);
-  fs.writeFileSync(filePath, buffer);
+export function flushDb(
+  db: Database,
+  filePath: string,
+  createIfNotExists: boolean,
+): void {
+  if (fs.existsSync(filePath) || createIfNotExists) {
+    const data = db.export();
+    const buffer = Buffer.from(data);
+    fs.writeFileSync(filePath, buffer);
+  }
 }
 
 /**

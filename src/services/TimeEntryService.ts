@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import type { Database, QueryExecResult } from 'sql.js';
 import type { TimeEntry, UserActivityEvent } from '../types';
 import { ServiceBase } from './ServiceBase';
-import { dailySummary, saveDb, splitUriPath } from '../utils/storageutils';
+import { dailySummary, flushDb, splitUriPath } from '../utils/storageutils';
 import { date, now } from '../utils/dateUtils';
 
 const HEARTBEAT_MS = 60000;
@@ -119,7 +119,7 @@ export class TimeEntryService extends ServiceBase {
         );
       }
 
-      saveDb(this._db, this._dbPath);
+      flushDb(this._db, this._dbPath, false);
     }
 
     if (finalizeEntry) {
