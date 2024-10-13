@@ -74,6 +74,7 @@ export class ExtensionController extends ServiceBase {
       return;
     }
 
+    this._outputChannel.clear();
     this._outputChannel.show(true);
 
     let curDateStr: string | null = null;
@@ -82,7 +83,11 @@ export class ExtensionController extends ServiceBase {
       if (dateStr !== curDateStr) {
         const dailyTotalM = timeStr(dailyTotal);
         this._outputChannel.appendLine(
-          `--- ${dateStr} ---\n${dailyTotalM} - Total\n------------------`,
+          `-------------------------------- ${dateStr} ----------------------------------------------`,
+        );
+        this._outputChannel.appendLine(`${dailyTotalM} - Total`);
+        this._outputChannel.appendLine(
+          '------------------------------------------------------------------------------------------',
         );
       }
 
