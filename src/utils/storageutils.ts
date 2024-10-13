@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import fs from 'node:fs';
 import path from 'node:path';
 import initSqlJs, { type Database } from 'sql.js';
+import type { SplitPaths } from '../types';
 
 export function initStorage(): {
   storageDir: string;
@@ -22,7 +23,7 @@ export function initStorage(): {
     fs.writeFileSync(path.join(storageDir, '.gitignore'), '*\n');
     fs.writeFileSync(
       dbPath.replace(/\.sqlite$/, '.csv'),
-      'UID,Elapsed,Start,End,Uri\n',
+      'UID,Date,Elapsed,Start,End,Wksp,Path\n',
     );
   }
 
@@ -43,7 +44,9 @@ export async function initDb(filePath: string): Promise<Database> {
     `CREATE TABLE time_entries (
       id integer primary key,
       uid text,
-      uri text,
+      workspacePath text,
+      filePath text,
+      date integer,
       start integer,
       end integer,
       duration integer
@@ -59,4 +62,22 @@ export function saveDb(db: Database, filePath: string): void {
   const data = db.export();
   const buffer = Buffer.from(data);
   fs.writeFileSync(filePath, buffer);
+}
+
+/**
+ * Split Uri path into wksp and relative path components.
+ */
+export function splitUriPath(uri?: vscode.Uri): SplitPaths {
+  const wkspPath = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
+  if (wkspPath == null) {
+    return {
+      wksp: '',
+      filePath: uri?.fsPath ?? '',
+    };
+  }
+
+  return {
+    wksp: wkspPath,
+    filePath: uri?.fsPath.substring(wkspPath.length + 1) ?? '',
+  };
 }

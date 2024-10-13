@@ -16,3 +16,8 @@ export interface TimeEntry {
   fileUri?: vscode.Uri;
   start: number;
 }
+
+export interface SplitPaths {
+  wksp: string;
+  filePath: string;
+}

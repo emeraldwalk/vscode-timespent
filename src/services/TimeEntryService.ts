@@ -3,14 +3,11 @@ import fs from 'node:fs';
 import type { Database } from 'sql.js';
 import type { TimeEntry, UserActivityEvent } from '../types';
 import { ServiceBase } from './ServiceBase';
-import { saveDb } from '../utils/storageutils';
+import { saveDb, splitUriPath } from '../utils/storageutils';
+import { date, now } from '../utils/dateUtils';
 
 const HEARTBEAT_MS = 60000;
 const INACTIVITY_TIMEOUT_MS = HEARTBEAT_MS * 1.5;
-
-function now() {
-  return new Date().valueOf();
-}
 
 export class TimeEntryService extends ServiceBase {
   constructor(db: Database, dbPath: string) {
@@ -78,7 +75,7 @@ export class TimeEntryService extends ServiceBase {
     }
 
     const { uid, fileUri, start } = this._timeEntry;
-    const uri = fileUri?.toString() ?? '';
+    const { wksp, filePath } = splitUriPath(fileUri);
 
     console.log(
       end == null ? 'Inserting:' : 'Updating:',
@@ -88,8 +85,8 @@ export class TimeEntryService extends ServiceBase {
     // Create
     if (end == null) {
       const sql = `INSERT
-      INTO time_entries (uid, uri, start)
-      VALUES ('${uid}', '${uri}', ${start});`;
+      INTO time_entries (uid, workspacePath, filePath, date, start)
+      VALUES ('${uid}', '${wksp}', '${filePath}', ${date(start)}, ${start});`;
 
       this._db.run(sql);
     }
@@ -97,8 +94,6 @@ export class TimeEntryService extends ServiceBase {
     else {
       const sql = `UPDATE time_entries
          SET
-         uri='${uri}',
-         start=${start},
          end=${end},
          duration=${end - start}
          WHERE uid='${uid}';`;
@@ -108,7 +103,15 @@ export class TimeEntryService extends ServiceBase {
       if (finalizeEntry) {
         fs.appendFileSync(
           this._dbPath.replace(/\.sqlite$/, '.csv'),
-          `${[`"${uid}"`, end - start, start, end, `"${uri}"`].join(',')}\n`,
+          `${[
+            `"${uid}"`,
+            date(start),
+            end - start,
+            start,
+            end,
+            `"${wksp}"`,
+            `"${filePath}`,
+          ].join(',')}\n`,
         );
       }
 
