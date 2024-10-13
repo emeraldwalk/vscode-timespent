@@ -78,11 +78,13 @@ export function flushDb(
   filePath: string,
   createIfNotExists: boolean,
 ): void {
-  if (fs.existsSync(filePath) || createIfNotExists) {
-    const data = db.export();
-    const buffer = Buffer.from(data);
-    fs.writeFileSync(filePath, buffer);
+  if (!createIfNotExists && !fs.existsSync(filePath)) {
+    return;
   }
+
+  const data = db.export();
+  const buffer = Buffer.from(data);
+  fs.writeFileSync(filePath, buffer);
 }
 
 /**
