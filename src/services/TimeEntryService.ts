@@ -114,7 +114,7 @@ export class TimeEntryService extends ServiceBase {
             start,
             end,
             `"${wksp}"`,
-            `"${filePath}`,
+            `"${filePath}"`,
           ].join(',')}\n`,
         );
       }
