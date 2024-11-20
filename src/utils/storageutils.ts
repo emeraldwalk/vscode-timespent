@@ -19,6 +19,10 @@ export function dailySummary(db: Database): QueryExecResult[] {
   );
 }
 
+export function timeEntries(db: Database): QueryExecResult[] {
+  return db.exec(`SELECT * FROM time_entries ORDER BY start;`);
+}
+
 export function initStorage(): {
   storageDir: string;
   dbPath: string;

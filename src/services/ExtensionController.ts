@@ -1,11 +1,12 @@
 import * as vscode from 'vscode';
+import * as fs from 'node:fs';
 import { type Database } from 'sql.js';
 import { ServiceBase } from './ServiceBase';
 import type { UserActivityEventType } from '../types';
 import { TimeEntryService } from './TimeEntryService';
 import { initDb } from '../utils/storageutils';
 import { initStorage } from '../utils/storageutils';
-import { timeStr } from '../utils/dateUtils';
+import { dateStr, timeStr } from '../utils/dateUtils';
 
 export class ExtensionController extends ServiceBase {
   constructor() {
@@ -41,6 +42,11 @@ export class ExtensionController extends ServiceBase {
     vscode.commands.registerCommand(
       'time-spent.dailyWorkspaceSummary',
       this.onShowDailyWorkspaceSummary,
+    );
+
+    vscode.commands.registerCommand(
+      'time-spent.exportTimeEntriesToCsv',
+      this.onExportTimeEntriesToCsv,
     );
 
     this.onDidUserActivityOccur('extensionInit')();
@@ -97,5 +103,35 @@ export class ExtensionController extends ServiceBase {
         [timeStr(fileTotal), filePath].join(' - '),
       );
     }
+  };
+
+  onExportTimeEntriesToCsv = async () => {
+    const [result] = this._timeEntryService?.showTimeEntries().values() ?? [];
+    if (result == null) {
+      return;
+    }
+
+    console.log(result);
+
+    const headerRow = [...result.columns, 'dateStr', 'startStr', 'endStr'];
+    const rows = result.values.map(row => {
+      row = [...row, dateStr(row[4]), timeStr(row[5]), timeStr(row[6])];
+      return row.map(v => `"${v}"`).join(',');
+    });
+
+    const csvContent = [headerRow, ...rows].join('\n');
+
+    const uri = await vscode.window.showSaveDialog({
+      defaultUri: vscode.Uri.file('timespent.csv'),
+      filters: { CSV: ['csv'] },
+    });
+
+    if (uri == null) {
+      return;
+    }
+
+    fs.writeFileSync(uri.fsPath, csvContent);
+
+    vscode.window.showTextDocument(uri);
   };
 }

@@ -3,7 +3,12 @@ import fs from 'node:fs';
 import type { Database, QueryExecResult } from 'sql.js';
 import type { TimeEntry, UserActivityEvent } from '../types';
 import { ServiceBase } from './ServiceBase';
-import { dailySummary, flushDb, splitUriPath } from '../utils/storageutils';
+import {
+  dailySummary,
+  flushDb,
+  splitUriPath,
+  timeEntries,
+} from '../utils/storageutils';
 import { date, now } from '../utils/dateUtils';
 
 const HEARTBEAT_MS = 60000;
@@ -71,6 +76,10 @@ export class TimeEntryService extends ServiceBase {
 
   showDailySummary = (): QueryExecResult[] => {
     return dailySummary(this._db);
+  };
+
+  showTimeEntries = (): QueryExecResult[] => {
+    return timeEntries(this._db);
   };
 
   storeEntry = (finalizeEntry: boolean, end: number | null) => {

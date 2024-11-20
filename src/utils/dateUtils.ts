@@ -15,6 +15,16 @@ export function date(dateTimeValue: number): number {
   ).valueOf();
 }
 
+export function dateStr(dateTimeValue: unknown): string {
+  if (dateTimeValue == null) {
+    return '';
+  }
+  return new Date(Number(dateTimeValue)).toISOString().substring(0, 10);
+}
+
 export function timeStr(dateTimeValue: unknown): string {
+  if (dateTimeValue == null) {
+    return '';
+  }
   return new Date(Number(dateTimeValue)).toISOString().substring(11, 19);
 }

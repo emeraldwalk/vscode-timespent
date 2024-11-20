@@ -19,6 +19,10 @@
       {
         "command": "time-spent.dailyWorkspaceSummary",
         "title": "Time Spent: Daily Workspace Summary"
+      },
+      {
+        "command": "time-spent.exportTimeEntriesToCsv",
+        "title": "Time Spent: Export Time Entries to CSV"
       }
     ]
   },
