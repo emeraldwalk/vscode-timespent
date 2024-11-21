@@ -6,5 +6,6 @@
 !LICENSE
 !package.json
 !README.md
+!docs/**
 !images/**
 !dist/**
