@@ -10,6 +10,7 @@ import {
   timeEntries,
 } from '../utils/storageutils';
 import { date, now } from '../utils/dateUtils';
+import { isTagEqual } from '../utils/tagUtils';
 
 const HEARTBEAT_MS = 60000;
 const INACTIVITY_TIMEOUT_MS = HEARTBEAT_MS * 1.5;
@@ -44,10 +45,7 @@ export class TimeEntryService extends ServiceBase {
   private _timeEntry: TimeEntry | null = null;
 
   handleEvent = (event: UserActivityEvent) => {
-    if (
-      this._timeEntry != null &&
-      this._timeEntry.fileUri?.toString() !== event.fileUri?.toString()
-    ) {
+    if (this._timeEntry != null && !isTagEqual(this._timeEntry, event)) {
       this.storeEntry(true, event.instant);
       this._timeEntry = null;
     }
@@ -56,6 +54,7 @@ export class TimeEntryService extends ServiceBase {
       this._timeEntry = {
         uid: nanoid(),
         fileUri: event.fileUri,
+        gitBranch: event.gitBranch,
         start: event.instant,
       };
 
@@ -87,7 +86,7 @@ export class TimeEntryService extends ServiceBase {
       return;
     }
 
-    const { uid, fileUri, start } = this._timeEntry;
+    const { uid, fileUri, start, gitBranch } = this._timeEntry;
     const { wksp, filePath } = splitUriPath(fileUri);
 
     console.log(
@@ -98,8 +97,10 @@ export class TimeEntryService extends ServiceBase {
     // Create
     if (end == null) {
       const sql = `INSERT
-      INTO time_entries (uid, workspacePath, filePath, date, start)
-      VALUES ('${uid}', '${wksp}', '${filePath}', ${date(start)}, ${start});`;
+      INTO time_entries (uid, workspacePath, filePath, gitCommit, gitBranch, date, start)
+      VALUES ('${uid}', '${wksp}', '${filePath}', '${
+        gitBranch?.commit ?? ''
+      }', '${gitBranch?.name ?? ''}', ${date(start)}, ${start});`;
 
       this._db.run(sql);
     }

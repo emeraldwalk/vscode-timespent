@@ -60,6 +60,8 @@ export async function initDb(filePath: string): Promise<Database> {
       id integer primary key,
       uid text,
       workspacePath text,
+      gitBranch text,
+      gitCommit text,
       filePath text,
       date integer,
       start integer,

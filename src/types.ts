@@ -1,19 +1,23 @@
 import * as vscode from 'vscode';
+import type { Branch } from './gitTypes';
 
 export type UserActivityEventType =
   | 'activeTextEditorChange'
   | 'editorSelectionChange'
   | 'extensionInit';
 
-export interface UserActivityEvent {
-  type: UserActivityEventType;
+export interface Tag {
   fileUri?: vscode.Uri;
+  gitBranch?: Branch;
+}
+
+export interface UserActivityEvent extends Tag {
+  type: UserActivityEventType;
   instant: number;
 }
 
-export interface TimeEntry {
+export interface TimeEntry extends Tag {
   uid: string;
-  fileUri?: vscode.Uri;
   start: number;
 }
 

@@ -7,6 +7,7 @@ import { TimeEntryService } from './TimeEntryService';
 import { initDb } from '../utils/storageutils';
 import { initStorage } from '../utils/storageutils';
 import { dateStr, timeStr } from '../utils/dateUtils';
+import { getGitHead } from '../utils/gitUtils';
 
 export class ExtensionController extends ServiceBase {
   constructor() {
@@ -49,11 +50,11 @@ export class ExtensionController extends ServiceBase {
       this.onExportTimeEntriesToCsv,
     );
 
-    this.onDidUserActivityOccur('extensionInit')();
+    await this.onDidUserActivityOccur('extensionInit')();
   };
 
   onDidUserActivityOccur = (eventType: UserActivityEventType) => {
-    return () => {
+    return async () => {
       const fileUri = vscode.window.activeTextEditor?.document.uri;
 
       // In cases where file path is undefined, there should be a corresponding
@@ -62,9 +63,12 @@ export class ExtensionController extends ServiceBase {
         return;
       }
 
+      const gitBranch = fileUri && (await getGitHead(fileUri));
+
       this._timeEntryService?.handleEvent({
         type: eventType,
         fileUri,
+        gitBranch,
         instant: new Date().valueOf(),
       });
     };

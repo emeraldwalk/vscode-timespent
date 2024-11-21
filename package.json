@@ -58,5 +58,8 @@
   "dependencies": {
     "nanoid": "^5.0.7",
     "sql.js": "^1.11.0"
-  }
+  },
+  "extensionDependencies": [
+    "vscode.git"
+  ]
 }
