@@ -1,9 +1,14 @@
 {
-  "name": "time-spent",
+  "name": "vscode-timespent",
   "displayName": "Time Spent",
-  "description": "",
+  "description": "Track time spent in vscode.",
   "publisher": "Emeraldwalk",
   "version": "0.0.1",
+  "license": "Apache-2.0",
+  "galleryBanner": {
+    "color": "#3e136e",
+    "theme": "dark"
+  },
   "engines": {
     "vscode": "^1.94.0"
   },
@@ -14,6 +19,13 @@
     "onLanguage"
   ],
   "main": "./dist/extension.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/emeraldwalk/vscode-timespent.git"
+  },
+  "bugs": {
+    "url": "https://github.com/emeraldwalk/vscode-timespent/issues"
+  },
   "contributes": {
     "commands": [
       {
@@ -29,7 +41,7 @@
   "scripts": {
     "vscode:prepublish": "npm run package",
     "compile": "npm run check-types && npm run lint && node esbuild.js && npm run copy:wasm",
-    "copy:wasm": "cp node_modules/sql.js/dist/sql-wasm.wasm dist/",
+    "copy:wasm": "cp node_modules/sql.js/dist/sql-wasm.wasm dist/ && cp node_modules/sql.js/LICENSE dist/SQLJS_LICENSE",
     "watch": "npm-run-all -p watch:*",
     "watch:esbuild": "npm run copy:wasm && node esbuild.js --watch",
     "watch:tsc": "tsc --noEmit --watch --project tsconfig.json",
