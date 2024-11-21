@@ -40,10 +40,6 @@ export function initStorage(): {
   if (!fs.existsSync(storageDir)) {
     fs.mkdirSync(storageDir, { recursive: true });
     fs.writeFileSync(path.join(storageDir, '.gitignore'), '*\n');
-    fs.writeFileSync(
-      dbPath.replace(/\.sqlite$/, '.csv'),
-      'UID,Date,Elapsed,Start,End,Wksp,Path\n',
-    );
   }
 
   return { storageDir, dbPath, csvPath };

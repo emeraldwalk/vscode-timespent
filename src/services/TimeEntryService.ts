@@ -113,21 +113,6 @@ export class TimeEntryService extends ServiceBase {
 
       this._db.run(sql);
 
-      // if (finalizeEntry) {
-      //   fs.appendFileSync(
-      //     this._dbPath.replace(/\.sqlite$/, '.csv'),
-      //     `${[
-      //       `"${uid}"`,
-      //       date(start),
-      //       end - start,
-      //       start,
-      //       end,
-      //       `"${wksp}"`,
-      //       `"${filePath}"`,
-      //     ].join(',')}\n`,
-      //   );
-      // }
-
       flushDb(this._db, this._dbPath, false);
     }
 
