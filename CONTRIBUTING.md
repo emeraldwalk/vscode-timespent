@@ -1,3 +1,11 @@
+## Icon Generation
+
+Generate `.svg` icon `.png`
+
+```sh
+npm run icon:gen
+```
+
 ## Release Process
 
 ### Setup
