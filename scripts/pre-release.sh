@@ -4,7 +4,7 @@ if [ $# -ne 1 ]; then
     exit 1
 fi
 
-vsce publish \
+npx vsce publish \
  --no-git-tag-version \
  --no-update-package-json \
  --pre-release \

@@ -17,7 +17,7 @@ Run the following script to do a pre-release:
 
 ```sh
 # Update pre-release version in command before running it
-scripts/pre-release.sh 0.3.X
+scripts/pre-release.sh 0.1.X
 ```
 
 #### Release
