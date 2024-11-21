@@ -3,15 +3,6 @@ import { Branch, GitExtension } from '../gitTypes';
 
 function isDescendant(parent: string, descendant: string): boolean {
   return descendant.toLowerCase().startsWith(parent.toLowerCase());
-  // if (parent === descendant) {
-  //   return true;
-  // }
-
-  // if (parent.charAt(parent.length - 1) !== sep) {
-  //   parent += sep;
-  // }
-
-  // return descendant.startsWith(parent);
 }
 
 export async function getGitHead(uri: vscode.Uri): Promise<Branch | undefined> {

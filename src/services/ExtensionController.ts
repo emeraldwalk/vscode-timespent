@@ -88,7 +88,13 @@ export class ExtensionController extends ServiceBase {
     this._outputChannel.show(true);
 
     let curDateStr: string | null = null;
-    for (const [date, filePath, fileTotal, dailyTotal] of result.values) {
+    for (const [
+      date,
+      filePath,
+      gitBranch,
+      fileTotal,
+      dailyTotal,
+    ] of result.values) {
       const dateStr = new Date(Number(date)).toISOString().substring(0, 10);
       if (dateStr !== curDateStr) {
         const dailyTotalM = timeStr(dailyTotal);
@@ -104,7 +110,7 @@ export class ExtensionController extends ServiceBase {
       curDateStr = dateStr;
 
       this._outputChannel.appendLine(
-        [timeStr(fileTotal), filePath].join(' - '),
+        [timeStr(fileTotal), `(${gitBranch}) ${filePath}`].join(' - '),
       );
     }
   };
@@ -115,18 +121,32 @@ export class ExtensionController extends ServiceBase {
       return;
     }
 
-    console.log(result);
+    const dateI = result.columns.indexOf('date');
+    const startI = result.columns.indexOf('start');
+    const endI = result.columns.indexOf('end');
 
     const headerRow = [...result.columns, 'dateStr', 'startStr', 'endStr'];
     const rows = result.values.map(row => {
-      row = [...row, dateStr(row[4]), timeStr(row[5]), timeStr(row[6])];
+      row = [
+        ...row,
+        dateStr(row[dateI]),
+        timeStr(row[startI]),
+        timeStr(row[endI]),
+      ];
       return row.map(v => `"${v}"`).join(',');
     });
 
     const csvContent = [headerRow, ...rows].join('\n');
 
+    const wkspFolder = vscode.workspace.workspaceFolders?.[0];
+
+    const defaultUri =
+      wkspFolder == null
+        ? vscode.Uri.file('timespent.csv')
+        : vscode.Uri.joinPath(wkspFolder.uri, 'timespent.csv');
+
     const uri = await vscode.window.showSaveDialog({
-      defaultUri: vscode.Uri.file('timespent.csv'),
+      defaultUri,
       filters: { CSV: ['csv'] },
     });
 
