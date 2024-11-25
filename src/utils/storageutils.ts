@@ -17,7 +17,7 @@ export function dailySummary(db: Database): QueryExecResult[] {
       FROM time_entries
       GROUP BY date, filePath
     )
-    ORDER BY date DESC, filePath, gitBranch;`,
+    ORDER BY date DESC, workspacePath, gitBranch, filePath;`,
   );
 }
 

@@ -122,10 +122,7 @@ export class ExtensionController extends ServiceBase {
       this._outputChannel.appendLine(
         [
           timeStr(fileTotal),
-          `(${gitBranch}) ${path.join(
-            String(workspacePath),
-            String(filePath),
-          )}`,
+          `${workspacePath} (${gitBranch}) ${filePath}`,
         ].join(' - '),
       );
     }
