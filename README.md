@@ -21,3 +21,7 @@ The following commands can be run from the command palette (`cmd+shift+p`, `ctrl
 
 - `Time Spent: Daily Workspace Summary` - Outputs a daily summary report in an output panel.
 - `Time Spent: Export Time Entries to CSV` - Save all time entries to a .csv file.
+
+## Configuration Settings
+
+- `storageDir` - Optional storage directory path where the time tracking `sqlite` database will be stored. Defaults to `.vscode/` folder in current workspace.

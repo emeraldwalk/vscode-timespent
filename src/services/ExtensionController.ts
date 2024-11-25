@@ -8,6 +8,7 @@ import { initDb } from '../utils/storageutils';
 import { initStorage } from '../utils/storageutils';
 import { dateStr, timeStr } from '../utils/dateUtils';
 import { getGitHead } from '../utils/gitUtils';
+import path from 'node:path';
 
 export class ExtensionController extends ServiceBase {
   constructor() {
@@ -21,7 +22,15 @@ export class ExtensionController extends ServiceBase {
   private _timeEntryService: TimeEntryService | null = null;
 
   init = async () => {
-    const dbPath = initStorage()?.dbPath;
+    const wkspPath = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
+    const defaultStorageDir =
+      wkspPath == null ? undefined : path.join(wkspPath, '.vscode');
+
+    const storageDir = vscode.workspace
+      .getConfiguration('emeraldwalk.timeSpent')
+      .get('storageDir', defaultStorageDir);
+
+    const dbPath = initStorage(storageDir)?.dbPath;
     if (dbPath == null) {
       return;
     }
@@ -90,6 +99,7 @@ export class ExtensionController extends ServiceBase {
     let curDateStr: string | null = null;
     for (const [
       date,
+      workspacePath,
       filePath,
       gitBranch,
       fileTotal,
@@ -110,7 +120,13 @@ export class ExtensionController extends ServiceBase {
       curDateStr = dateStr;
 
       this._outputChannel.appendLine(
-        [timeStr(fileTotal), `(${gitBranch}) ${filePath}`].join(' - '),
+        [
+          timeStr(fileTotal),
+          `(${gitBranch}) ${path.join(
+            String(workspacePath),
+            String(filePath),
+          )}`,
+        ].join(' - '),
       );
     }
   };
