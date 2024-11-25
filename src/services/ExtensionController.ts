@@ -97,6 +97,7 @@ export class ExtensionController extends ServiceBase {
     this._outputChannel.show(true);
 
     let curDateStr: string | null = null;
+    let curWkspPath: string | null = null;
     for (const [
       date,
       workspacePath,
@@ -106,24 +107,20 @@ export class ExtensionController extends ServiceBase {
       dailyTotal,
     ] of result.values) {
       const dateStr = new Date(Number(date)).toISOString().substring(0, 10);
-      if (dateStr !== curDateStr) {
+      if (dateStr !== curDateStr || curWkspPath !== workspacePath) {
         const dailyTotalM = timeStr(dailyTotal);
         this._outputChannel.appendLine(
-          `-------------------------------- ${dateStr} ----------------------------------------------`,
+          `---- ${dateStr} - ${workspacePath} --------------------------------------------`,
         );
         this._outputChannel.appendLine(`${dailyTotalM} - Total`);
-        this._outputChannel.appendLine(
-          '------------------------------------------------------------------------------------------',
-        );
+        this._outputChannel.appendLine('----------------');
       }
 
       curDateStr = dateStr;
+      curWkspPath = workspacePath as string;
 
       this._outputChannel.appendLine(
-        [
-          timeStr(fileTotal),
-          `${workspacePath} (${gitBranch}) ${filePath}`,
-        ].join(' - '),
+        [timeStr(fileTotal), `(${gitBranch}) ${filePath}`].join(' - '),
       );
     }
   };
