@@ -6,9 +6,10 @@ import type { SplitPaths } from '../types';
 
 export function dailySummary(db: Database): QueryExecResult[] {
   return db.exec(
-    `SELECT date, filePath, gitBranch, fileTotal, SUM(fileTotal) OVER(PARTITION BY date)
+    `SELECT date, workspacePath, filePath, gitBranch, fileTotal, SUM(fileTotal) OVER(PARTITION BY date)
     FROM (
       SELECT date,
+      workspacePath,
       filePath,
       gitBranch,
       SUM(duration) as fileTotal,

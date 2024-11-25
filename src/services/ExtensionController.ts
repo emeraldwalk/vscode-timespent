@@ -99,6 +99,7 @@ export class ExtensionController extends ServiceBase {
     let curDateStr: string | null = null;
     for (const [
       date,
+      workspacePath,
       filePath,
       gitBranch,
       fileTotal,
@@ -119,7 +120,13 @@ export class ExtensionController extends ServiceBase {
       curDateStr = dateStr;
 
       this._outputChannel.appendLine(
-        [timeStr(fileTotal), `(${gitBranch}) ${filePath}`].join(' - '),
+        [
+          timeStr(fileTotal),
+          `(${gitBranch}) ${path.join(
+            String(workspacePath),
+            String(filePath),
+          )}`,
+        ].join(' - '),
       );
     }
   };
