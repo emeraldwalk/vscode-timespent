@@ -3,7 +3,7 @@ import { ExtensionController } from '~/services/ExtensionController';
 
 let controller: ExtensionController;
 
-export function activate(context: vscode.ExtensionContext) {
+export function activate(_context: vscode.ExtensionContext) {
   console.log('Activating time-spent extension.');
   controller = new ExtensionController();
 }

@@ -37,7 +37,22 @@
         "command": "time-spent.exportTimeEntriesToCsv",
         "title": "Time Spent: Export Time Entries to CSV"
       }
-    ]
+    ],
+    "configuration": {
+      "title": "Time Spent Configuration.",
+      "type": "object",
+      "properties": {
+        "emeraldwalk.timeSpent": {
+          "type": "object",
+          "properties": {
+            "storageDir": {
+              "type": "string",
+              "description": "Storage directory to save sqlite database."
+            }
+          }
+        }
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run package",

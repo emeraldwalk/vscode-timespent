@@ -24,17 +24,17 @@ export function timeEntries(db: Database): QueryExecResult[] {
   return db.exec(`SELECT * FROM time_entries ORDER BY start;`);
 }
 
-export function initStorage(): {
+export function initStorage(storageDir?: string): {
   storageDir: string;
   dbPath: string;
   csvPath: string;
 } | null {
-  const wkspPath = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
-  if (wkspPath == null) {
+  if (storageDir == null) {
     return null;
   }
 
-  const storageDir = path.join(wkspPath, '.vscode', '_timespent');
+  storageDir = path.join(storageDir, '_timespent');
+
   const dbPath = path.join(storageDir, 'timespent.sqlite');
   const csvPath = path.join(storageDir, 'timespent.csv');
 
