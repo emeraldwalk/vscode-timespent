@@ -4,7 +4,7 @@
   "description": "Track time spent in vscode.",
   "icon": "images/clock-icon-128.png",
   "publisher": "Emeraldwalk",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "license": "Apache-2.0",
   "galleryBanner": {
     "color": "#3e136e",
