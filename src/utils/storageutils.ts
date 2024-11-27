@@ -102,16 +102,23 @@ export function flushDb(
  * Split Uri path into wksp and relative path components.
  */
 export function splitUriPath(uri?: vscode.Uri): SplitPaths {
-  const wkspPath = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
-  if (wkspPath == null) {
-    return {
-      wksp: '',
-      filePath: uri?.fsPath ?? '',
-    };
-  }
+  const wkspFolder =
+    uri?.scheme === 'file'
+      ? vscode.workspace.workspaceFolders?.find(path =>
+          uri?.fsPath.startsWith(path.uri.fsPath),
+        )
+      : // This happens when output panels are selected
+        vscode.workspace.workspaceFolders?.[0];
+
+  const wkspPath = wkspFolder?.uri.fsPath ?? '';
+
+  const filePath =
+    uri?.scheme === 'file'
+      ? uri.fsPath.substring(wkspPath.length + 1)
+      : uri?.fsPath;
 
   return {
     wksp: wkspPath,
-    filePath: uri?.fsPath.substring(wkspPath.length + 1) ?? '',
+    filePath: filePath ?? '',
   };
 }
