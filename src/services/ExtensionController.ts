@@ -35,7 +35,10 @@ export class ExtensionController extends ServiceBase {
       return;
     }
 
-    this._outputChannel = vscode.window.createOutputChannel('Time Spent');
+    this._outputChannel = vscode.window.createOutputChannel(
+      'Time Spent',
+      'markdown',
+    );
 
     this._db = await initDb(dbPath);
 
@@ -105,22 +108,38 @@ export class ExtensionController extends ServiceBase {
       gitBranch,
       fileTotal,
       dailyTotal,
+      dailyWkspTotal,
     ] of result.values) {
       const dateStr = new Date(Number(date)).toISOString().substring(0, 10);
-      if (dateStr !== curDateStr || curWkspPath !== workspacePath) {
+
+      const lineBreak = '';
+      const branchLabel = gitBranch ? `(${gitBranch})` : '[none]';
+
+      if (dateStr !== curDateStr) {
+        if (curDateStr) {
+          this._outputChannel.appendLine(lineBreak);
+          this._outputChannel.appendLine(
+            '-------------------------------------------------------------------',
+          );
+        }
         const dailyTotalM = timeStr(dailyTotal);
-        this._outputChannel.appendLine(
-          `---- ${dateStr} - ${workspacePath} --------------------------------------------`,
-        );
+        this._outputChannel.appendLine(`## ${dateStr}`);
         this._outputChannel.appendLine(`${dailyTotalM} - Total`);
-        this._outputChannel.appendLine('----------------');
+        this._outputChannel.appendLine(lineBreak);
+      }
+
+      if ((dateStr !== curDateStr || curWkspPath) !== workspacePath) {
+        const dailyWkspTotalM = timeStr(dailyWkspTotal);
+        this._outputChannel.appendLine(`### Workspace: ${workspacePath}`);
+        this._outputChannel.appendLine(`${dailyWkspTotalM} - Total`);
+        this._outputChannel.appendLine(lineBreak);
       }
 
       curDateStr = dateStr;
       curWkspPath = workspacePath as string;
 
       this._outputChannel.appendLine(
-        [timeStr(fileTotal), `(${gitBranch}) ${filePath}`].join(' - '),
+        [timeStr(fileTotal), `${branchLabel} ${filePath}`].join(' - '),
       );
     }
   };
