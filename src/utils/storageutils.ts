@@ -6,7 +6,14 @@ import type { SplitPaths } from '../types';
 
 export function dailySummary(db: Database): QueryExecResult[] {
   return db.exec(
-    `SELECT date, workspacePath, filePath, gitBranch, fileTotal, SUM(fileTotal) OVER(PARTITION BY date)
+    `SELECT
+      date,
+      workspacePath,
+      filePath,
+      gitBranch,
+      fileTotal,
+      SUM(fileTotal) OVER(PARTITION BY date) as dailyTotal,
+      SUM(fileTotal) OVER(PARTITION BY date, workspacePath) as dailyWkspTotal
     FROM (
       SELECT date,
       workspacePath,
@@ -17,7 +24,7 @@ export function dailySummary(db: Database): QueryExecResult[] {
       FROM time_entries
       GROUP BY date, filePath
     )
-    ORDER BY date DESC, filePath, gitBranch;`,
+    ORDER BY date DESC, workspacePath, gitBranch, filePath;`,
   );
 }
 

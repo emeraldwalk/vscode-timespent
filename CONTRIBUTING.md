@@ -23,6 +23,10 @@ Update version in `package.json`
 
 Run the following script to do a pre-release:
 
+1. Update version number in `package.json` (probably can use npm version but need to investigate)
+1. Run `npm i` to update package-lock.
+1. Run `pre-release` script targetting new version.
+
 ```sh
 # Update pre-release version in command before running it
 scripts/pre-release.sh 0.1.X
