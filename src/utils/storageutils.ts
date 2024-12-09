@@ -34,7 +34,6 @@ export function timeEntries(db: Database): QueryExecResult[] {
 
 export function initStorage(storageDir?: string): {
   storageDir: string;
-  dbPath: string;
   csvPath: string;
 } | null {
   if (storageDir == null) {
@@ -42,8 +41,6 @@ export function initStorage(storageDir?: string): {
   }
 
   storageDir = path.join(storageDir, '_timespent');
-
-  const dbPath = path.join(storageDir, 'timespent.sqlite');
   const csvPath = path.join(storageDir, 'timespent.csv');
 
   if (!fs.existsSync(storageDir)) {
@@ -51,7 +48,7 @@ export function initStorage(storageDir?: string): {
     fs.writeFileSync(path.join(storageDir, '.gitignore'), '*\n');
   }
 
-  return { storageDir, dbPath, csvPath };
+  return { storageDir, csvPath };
 }
 
 export async function initDb(filePath: string): Promise<Database> {

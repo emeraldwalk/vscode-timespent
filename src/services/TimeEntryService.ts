@@ -1,11 +1,10 @@
 import { nanoid } from 'nanoid';
-import type { Database, QueryExecResult } from 'sql.js';
+import type { QueryExecResult } from 'sql.js';
 import type { TimeEntry, UserActivityEvent } from '../types';
 import { ServiceBase } from './ServiceBase';
 import {
   appendCsvRow,
   dailySummary,
-  flushDb,
   initDbFromCsv,
   splitUriPath,
   timeEntries,
@@ -17,10 +16,8 @@ const HEARTBEAT_MS = 60000;
 const INACTIVITY_TIMEOUT_MS = HEARTBEAT_MS * 1.5;
 
 export class TimeEntryService extends ServiceBase {
-  constructor(db: Database, dbPath: string, csvPath: string) {
+  constructor(csvPath: string) {
     super();
-    this._db = db;
-    this._dbPath = dbPath;
     this._csvPath = csvPath;
 
     // Update entry in an interval
@@ -41,8 +38,6 @@ export class TimeEntryService extends ServiceBase {
     });
   }
 
-  private readonly _db: Database;
-  private readonly _dbPath: string;
   private readonly _csvPath: string;
   private _debounceTimeout?: NodeJS.Timeout;
   private _timeEntry: TimeEntry | null = null;
@@ -94,33 +89,8 @@ export class TimeEntryService extends ServiceBase {
     const { uid, fileUri, start, gitBranch } = this._timeEntry;
     const { wksp, filePath } = splitUriPath(fileUri);
 
-    console.log(
-      end == null ? 'Inserting:' : 'Updating:',
-      JSON.stringify(this._timeEntry),
-    );
-
-    // Create
-    if (end == null) {
-      const sql = `INSERT
-      INTO time_entries (uid, workspacePath, filePath, gitCommit, gitBranch, date, start)
-      VALUES ('${uid}', '${wksp}', '${filePath}', '${
-        gitBranch?.commit ?? ''
-      }', '${gitBranch?.name ?? ''}', ${date(start)}, ${start});`;
-
-      this._db.run(sql);
-    }
     // Update
-    else {
-      const sql = `UPDATE time_entries
-         SET
-         end=${end},
-         duration=${end - start}
-         WHERE uid='${uid}';`;
-
-      this._db.run(sql);
-
-      flushDb(this._db, this._dbPath, false);
-
+    if (end != null) {
       const csvRow = [
         uid,
         wksp,

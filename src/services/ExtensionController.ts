@@ -4,7 +4,6 @@ import { type Database } from 'sql.js';
 import { ServiceBase } from './ServiceBase';
 import type { UserActivityEventType } from '../types';
 import { TimeEntryService } from './TimeEntryService';
-import { initDb } from '../utils/storageutils';
 import { initStorage } from '../utils/storageutils';
 import { dateStr, timeStr } from '../utils/dateUtils';
 import { getGitHead } from '../utils/gitUtils';
@@ -17,7 +16,6 @@ export class ExtensionController extends ServiceBase {
     void this.init();
   }
 
-  private _db: Database | null = null;
   private _outputChannel: vscode.OutputChannel | null = null;
   private _timeEntryService: TimeEntryService | null = null;
 
@@ -30,21 +28,17 @@ export class ExtensionController extends ServiceBase {
       .getConfiguration('emeraldwalk.timeSpent')
       .get('storageDir', defaultStorageDir);
 
-    const dbPath = initStorage(storageDir)?.dbPath;
-    if (dbPath == null) {
+    const csvPath = initStorage(storageDir)?.csvPath;
+    if (csvPath == null) {
       return;
     }
-
-    const csvPath = dbPath.replace(/\.sqlite$/, '.csv');
 
     this._outputChannel = vscode.window.createOutputChannel(
       'Time Spent',
       'markdown',
     );
 
-    this._db = await initDb(dbPath);
-
-    this._timeEntryService = new TimeEntryService(this._db, dbPath, csvPath);
+    this._timeEntryService = new TimeEntryService(csvPath);
     this.registerDisposable(this._timeEntryService);
 
     vscode.window.onDidChangeTextEditorSelection(
