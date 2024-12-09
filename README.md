@@ -4,16 +4,16 @@ Track time spent in vscode.
 
 ## Features
 
-- Time entries are stored per workspace in a local sqlite database.
+- Time entries are stored per workspace in a local .csv file.
 - Time is tracked by file path, current git branch and commit hash.
 - Daily summary report.
 - CSV export of time entries.
 
 ## Sqlite Database
 
-Time entries are stored in a `sqlite` database at `.vscode/_timespent/timespent.sqlite` in the workspace.
+Time entries are stored in a `.csv` file at `.vscode/_timespent/timespent.csv` in the workspace.
 
-![sqlite database](./docs/db.png)
+![sqlite database](./docs/csv.png)
 
 ## Commands
 
@@ -24,4 +24,4 @@ The following commands can be run from the command palette (`cmd+shift+p`, `ctrl
 
 ## Configuration Settings
 
-- `storageDir` - Optional storage directory path where the time tracking `sqlite` database will be stored. Defaults to `.vscode/` folder in current workspace.
+- `storageDir` - Optional storage directory path where the time tracking `.csv` file will be stored. Defaults to `.vscode/` folder in current workspace.
