@@ -43,7 +43,11 @@ export class TimeEntryService extends ServiceBase {
   private _timeEntry: TimeEntry | null = null;
 
   handleEvent = (event: UserActivityEvent) => {
-    if (this._timeEntry != null && !isTagEqual(this._timeEntry, event)) {
+    if (
+      this._timeEntry != null &&
+      (event.type === 'windowStateChange' ||
+        !isTagEqual(this._timeEntry, event))
+    ) {
       this.storeEntry(true, event.instant);
       this._timeEntry = null;
     }

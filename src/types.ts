@@ -4,7 +4,8 @@ import type { Branch } from './gitTypes';
 export type UserActivityEventType =
   | 'activeTextEditorChange'
   | 'editorSelectionChange'
-  | 'extensionInit';
+  | 'extensionInit'
+  | 'windowStateChange';
 
 export interface Tag {
   fileUri?: vscode.Uri;
