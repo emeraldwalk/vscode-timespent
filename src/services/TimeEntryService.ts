@@ -1,11 +1,12 @@
 import { nanoid } from 'nanoid';
-import fs from 'node:fs';
 import type { Database, QueryExecResult } from 'sql.js';
 import type { TimeEntry, UserActivityEvent } from '../types';
 import { ServiceBase } from './ServiceBase';
 import {
+  appendCsvRow,
   dailySummary,
   flushDb,
+  initDbFromCsv,
   splitUriPath,
   timeEntries,
 } from '../utils/storageutils';
@@ -16,10 +17,11 @@ const HEARTBEAT_MS = 60000;
 const INACTIVITY_TIMEOUT_MS = HEARTBEAT_MS * 1.5;
 
 export class TimeEntryService extends ServiceBase {
-  constructor(db: Database, dbPath: string) {
+  constructor(db: Database, dbPath: string, csvPath: string) {
     super();
     this._db = db;
     this._dbPath = dbPath;
+    this._csvPath = csvPath;
 
     // Update entry in an interval
     const interval = setInterval(() => {
@@ -41,6 +43,7 @@ export class TimeEntryService extends ServiceBase {
 
   private readonly _db: Database;
   private readonly _dbPath: string;
+  private readonly _csvPath: string;
   private _debounceTimeout?: NodeJS.Timeout;
   private _timeEntry: TimeEntry | null = null;
 
@@ -73,12 +76,14 @@ export class TimeEntryService extends ServiceBase {
     }, INACTIVITY_TIMEOUT_MS);
   };
 
-  showDailySummary = (): QueryExecResult[] => {
-    return dailySummary(this._db);
+  showDailySummary = async (): Promise<QueryExecResult[]> => {
+    const db = await initDbFromCsv(this._csvPath);
+    return dailySummary(db);
   };
 
-  showTimeEntries = (): QueryExecResult[] => {
-    return timeEntries(this._db);
+  showTimeEntries = async (): Promise<QueryExecResult[]> => {
+    const db = await initDbFromCsv(this._csvPath);
+    return timeEntries(db);
   };
 
   storeEntry = (finalizeEntry: boolean, end: number | null) => {
@@ -115,6 +120,20 @@ export class TimeEntryService extends ServiceBase {
       this._db.run(sql);
 
       flushDb(this._db, this._dbPath, false);
+
+      const csvRow = [
+        uid,
+        wksp,
+        gitBranch?.name ?? '',
+        gitBranch?.commit ?? '',
+        filePath,
+        date(start),
+        start,
+        end,
+        end - start,
+      ] as const;
+
+      appendCsvRow(this._csvPath, csvRow);
     }
 
     if (finalizeEntry) {

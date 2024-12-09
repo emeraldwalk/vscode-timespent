@@ -22,7 +22,7 @@ export function dailySummary(db: Database): QueryExecResult[] {
       SUM(duration) as fileTotal,
       SUM(duration) OVER(PARTITION BY date)
       FROM time_entries
-      GROUP BY date, filePath
+      GROUP BY date, filePath, gitBranch
     )
     ORDER BY date DESC, workspacePath, gitBranch, filePath;`,
   );
@@ -84,6 +84,51 @@ export async function initDb(filePath: string): Promise<Database> {
   return db;
 }
 
+/**
+ * Initialize an in-memory SQLITE database from a CSV file.
+ * @param csvFilePath
+ * @returns
+ */
+export async function initDbFromCsv(csvFilePath: string): Promise<Database> {
+  const SQL = await initSqlJs();
+
+  const db = new SQL.Database();
+
+  db.run(
+    `CREATE TABLE time_entries (
+      id integer primary key,
+      uid text,
+      workspacePath text,
+      gitBranch text,
+      gitCommit text,
+      filePath text,
+      date integer,
+      start integer,
+      end integer,
+      duration integer
+    );`,
+  );
+
+  const sql = `INSERT
+  INTO time_entries (uid, workspacePath, gitBranch, gitCommit, filePath, date, start, end, duration)
+  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);`;
+
+  const csv = fs.readFileSync(csvFilePath, 'utf-8').split('\n');
+  csv.shift(); // Remove header
+
+  for (const line of csv) {
+    const values = line.split(',');
+    if (values.length === 9) {
+      db.run(
+        sql,
+        values.map(v => v.replace(/^"|"$/g, '')),
+      );
+    }
+  }
+
+  return db;
+}
+
 export function flushDb(
   db: Database,
   filePath: string,
@@ -96,6 +141,36 @@ export function flushDb(
   const data = db.export();
   const buffer = Buffer.from(data);
   fs.writeFileSync(filePath, buffer);
+}
+
+/**
+ * Append csv row to given path.
+ * @param filePath
+ * @param row
+ */
+export function appendCsvRow(
+  filePath: string,
+  row: readonly [
+    string,
+    string,
+    string,
+    string,
+    string,
+    number,
+    number,
+    number,
+    number,
+  ],
+): void {
+  if (!fs.existsSync(filePath)) {
+    fs.writeFileSync(
+      filePath,
+      'uid,workspacePath,gitBranch,gitCommit,filePath,date,start,end,duration\n',
+    );
+  }
+
+  const csvRow = row.map(v => (typeof v === 'string' ? `"${v}"` : v)).join(',');
+  fs.appendFileSync(filePath, `${csvRow}\n`);
 }
 
 /**

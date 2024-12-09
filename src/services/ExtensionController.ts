@@ -35,6 +35,8 @@ export class ExtensionController extends ServiceBase {
       return;
     }
 
+    const csvPath = dbPath.replace(/\.sqlite$/, '.csv');
+
     this._outputChannel = vscode.window.createOutputChannel(
       'Time Spent',
       'markdown',
@@ -42,7 +44,7 @@ export class ExtensionController extends ServiceBase {
 
     this._db = await initDb(dbPath);
 
-    this._timeEntryService = new TimeEntryService(this._db, dbPath);
+    this._timeEntryService = new TimeEntryService(this._db, dbPath, csvPath);
     this.registerDisposable(this._timeEntryService);
 
     vscode.window.onDidChangeTextEditorSelection(
@@ -86,12 +88,13 @@ export class ExtensionController extends ServiceBase {
     };
   };
 
-  onShowDailyWorkspaceSummary = () => {
+  onShowDailyWorkspaceSummary = async () => {
     if (this._outputChannel == null) {
       return;
     }
 
-    const [result] = this._timeEntryService?.showDailySummary().values() ?? [];
+    const [result] =
+      (await this._timeEntryService?.showDailySummary())?.values() ?? [];
     if (result == null) {
       return;
     }
@@ -145,7 +148,8 @@ export class ExtensionController extends ServiceBase {
   };
 
   onExportTimeEntriesToCsv = async () => {
-    const [result] = this._timeEntryService?.showTimeEntries().values() ?? [];
+    const [result] =
+      (await this._timeEntryService?.showTimeEntries())?.values() ?? [];
     if (result == null) {
       return;
     }
@@ -162,7 +166,7 @@ export class ExtensionController extends ServiceBase {
         timeStr(row[startI]),
         timeStr(row[endI]),
       ];
-      return row.map(v => `"${v}"`).join(',');
+      return row.map(v => (isNaN(Number(v)) ? `"${v}"` : v)).join(',');
     });
 
     const csvContent = [headerRow, ...rows].join('\n');
