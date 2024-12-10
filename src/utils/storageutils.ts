@@ -63,37 +63,6 @@ export function initStorage(storageDir?: string): {
   return { storageDir, csvPath };
 }
 
-export async function initDb(filePath: string): Promise<Database> {
-  const SQL = await initSqlJs();
-
-  if (fs.existsSync(filePath)) {
-    const filebuffer = fs.readFileSync(filePath);
-    return new SQL.Database(filebuffer);
-  }
-
-  const db = new SQL.Database();
-
-  db.run(
-    `CREATE TABLE time_entries (
-      id integer primary key,
-      uid text,
-      workspacePath text,
-      gitBranch text,
-      gitCommit text,
-      filePath text,
-      eventType text,
-      date integer,
-      start integer,
-      end integer,
-      duration integer
-    );`,
-  );
-
-  flushDb(db, filePath, true);
-
-  return db;
-}
-
 /**
  * Initialize an in-memory SQLITE database from a CSV file.
  * @param csvFilePath
@@ -112,6 +81,7 @@ export async function initDbFromCsv(csvFilePath: string): Promise<Database> {
       gitBranch text,
       gitCommit text,
       filePath text,
+      eventType text,
       date integer,
       start integer,
       end integer,
