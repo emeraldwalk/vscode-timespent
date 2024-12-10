@@ -41,9 +41,10 @@ export class ExtensionController extends ServiceBase {
     this._timeEntryService = new TimeEntryService(csvPath);
     this.registerDisposable(this._timeEntryService);
 
-    vscode.window.onDidChangeWindowState(
-      this.onDidUserActivityOccur('windowStateChange'),
-    );
+    vscode.window.onDidChangeWindowState(event => {
+      const eventType = event.focused ? 'windowFocus' : 'windowBlur';
+      this.onDidUserActivityOccur(eventType)();
+    });
     vscode.window.onDidChangeTextEditorSelection(
       this.onDidUserActivityOccur('editorSelectionChange'),
     );

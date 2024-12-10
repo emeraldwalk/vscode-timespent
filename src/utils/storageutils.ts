@@ -29,7 +29,19 @@ export function dailySummary(db: Database): QueryExecResult[] {
 }
 
 export function timeEntries(db: Database): QueryExecResult[] {
-  return db.exec(`SELECT * FROM time_entries ORDER BY start;`);
+  return db.exec(`SELECT 
+    id,
+    uid,
+    workspacePath,
+    gitBranch,
+    gitCommit,
+    filePath,
+    eventType,
+    date,
+    start,
+    end,
+    duration
+    FROM time_entries ORDER BY start;`);
 }
 
 export function initStorage(storageDir?: string): {
@@ -69,6 +81,7 @@ export async function initDb(filePath: string): Promise<Database> {
       gitBranch text,
       gitCommit text,
       filePath text,
+      eventType text,
       date integer,
       start integer,
       end integer,
@@ -107,15 +120,15 @@ export async function initDbFromCsv(csvFilePath: string): Promise<Database> {
   );
 
   const sql = `INSERT
-  INTO time_entries (uid, workspacePath, gitBranch, gitCommit, filePath, date, start, end, duration)
-  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);`;
+  INTO time_entries (uid, workspacePath, gitBranch, gitCommit, filePath, eventType, date, start, end, duration)
+  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`;
 
   const csv = fs.readFileSync(csvFilePath, 'utf-8').split('\n');
   csv.shift(); // Remove header
 
   for (const line of csv) {
     const values = line.split(',');
-    if (values.length === 9) {
+    if (values.length === 10) {
       db.run(
         sql,
         values.map(v => v.replace(/^"|"$/g, '')),
@@ -153,6 +166,7 @@ export function appendCsvRow(
     string,
     string,
     string,
+    string,
     number,
     number,
     number,
@@ -162,7 +176,7 @@ export function appendCsvRow(
   if (!fs.existsSync(filePath)) {
     fs.writeFileSync(
       filePath,
-      'uid,workspacePath,gitBranch,gitCommit,filePath,date,start,end,duration\n',
+      'uid,workspacePath,gitBranch,gitCommit,filePath,eventType,date,start,end,duration\n',
     );
   }
 

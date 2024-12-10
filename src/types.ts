@@ -3,9 +3,12 @@ import type { Branch } from './gitTypes';
 
 export type UserActivityEventType =
   | 'activeTextEditorChange'
+  | 'activityTimeout'
+  | 'dispose'
   | 'editorSelectionChange'
   | 'extensionInit'
-  | 'windowStateChange';
+  | 'windowFocus'
+  | 'windowBlur';
 
 export interface Tag {
   fileUri?: vscode.Uri;
@@ -18,6 +21,7 @@ export interface UserActivityEvent extends Tag {
 }
 
 export interface TimeEntry extends Tag {
+  eventType: UserActivityEventType;
   uid: string;
   start: number;
 }
