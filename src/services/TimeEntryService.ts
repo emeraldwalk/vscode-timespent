@@ -16,7 +16,7 @@ import {
 import { date, now } from '../utils/dateUtils';
 import { isTagEqual } from '../utils/tagUtils';
 
-const INACTIVITY_TIMEOUT_MS = 60000;
+const INACTIVITY_TIMEOUT_MS = 45000;
 
 export class TimeEntryService extends ServiceBase {
   constructor(csvPath: string) {
@@ -37,6 +37,8 @@ export class TimeEntryService extends ServiceBase {
   private _timeEntry: TimeEntry | null = null;
 
   handleEvent = (event: UserActivityEvent) => {
+    console.log('[vscode-timespent]', event.type, event.fileUri?.path);
+
     if (
       this._timeEntry != null &&
       (event.type === 'windowBlur' || !isTagEqual(this._timeEntry, event))
