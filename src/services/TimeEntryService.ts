@@ -16,7 +16,7 @@ import {
 import { date, now } from '../utils/dateUtils';
 import { isTagEqual } from '../utils/tagUtils';
 
-const INACTIVITY_TIMEOUT_MS = 45000;
+const INACTIVITY_TIMEOUT_MS = 60000;
 
 export class TimeEntryService extends ServiceBase {
   constructor(csvPath: string) {
@@ -39,10 +39,7 @@ export class TimeEntryService extends ServiceBase {
   handleEvent = (event: UserActivityEvent) => {
     console.log('[vscode-timespent]', event.type, event.fileUri?.path);
 
-    if (
-      this._timeEntry != null &&
-      (event.type === 'windowBlur' || !isTagEqual(this._timeEntry, event))
-    ) {
+    if (this._timeEntry != null && !isTagEqual(this._timeEntry, event)) {
       // Note that this clears the entry as well
       this.storeEntry(event.type, event.instant);
     }
@@ -60,7 +57,12 @@ export class TimeEntryService extends ServiceBase {
     clearTimeout(this._debounceTimeout);
 
     this._debounceTimeout = setTimeout(() => {
-      this.storeEntry('activityTimeout', now());
+      // If inactivity timeout is reached, store the current entry but subtrack
+      // the inactivity timeout. This makes things more seamless if the user has
+      // switched to another vscode window. In cases where the user has just
+      // switched to another app, this gives some cushion should the user switch
+      // back to vscode before the timeout is reached.
+      this.storeEntry('activityTimeout', now() - INACTIVITY_TIMEOUT_MS);
     }, INACTIVITY_TIMEOUT_MS);
   };
 
@@ -75,7 +77,7 @@ export class TimeEntryService extends ServiceBase {
   };
 
   storeEntry = (endEventType: UserActivityEventType, end: number) => {
-    if (this._timeEntry == null) {
+    if (this._timeEntry == null || end <= this._timeEntry.start) {
       return;
     }
 
