@@ -9,11 +9,11 @@ Track time spent in vscode.
 - Daily summary report.
 - CSV export of time entries.
 
-## Sqlite Database
+## CSV File Storage
 
 Time entries are stored in a `.csv` file at `.vscode/_timespent/timespent.csv` in the workspace.
 
-![sqlite database](./docs/csv.png)
+![CSV File Storage](./docs/csv.png)
 
 ## Commands
 
