@@ -1,6 +1,5 @@
 import * as vscode from 'vscode';
 import * as fs from 'node:fs';
-import { type Database } from 'sql.js';
 import { ServiceBase } from './ServiceBase';
 import type { UserActivityEventType } from '../types';
 import { TimeEntryService } from './TimeEntryService';
@@ -8,6 +7,8 @@ import { initStorage } from '../utils/storageutils';
 import { dateStr, timeStr } from '../utils/dateUtils';
 import { getGitHead } from '../utils/gitUtils';
 import path from 'node:path';
+
+const INACTIVITY_TIMEOUT_MS = 60000;
 
 export class ExtensionController extends ServiceBase {
   constructor() {
@@ -24,9 +25,12 @@ export class ExtensionController extends ServiceBase {
     const defaultStorageDir =
       wkspPath == null ? undefined : path.join(wkspPath, '.vscode');
 
-    const storageDir = vscode.workspace
-      .getConfiguration('emeraldwalk.timeSpent')
-      .get('storageDir', defaultStorageDir);
+    const config = vscode.workspace.getConfiguration('emeraldwalk.timeSpent');
+    const storageDir = config.get('storageDir', defaultStorageDir);
+    const inactivityTimeoutMs = config.get(
+      'inactivityTimeoutMs',
+      INACTIVITY_TIMEOUT_MS,
+    );
 
     const csvPath = initStorage(storageDir)?.csvPath;
     if (csvPath == null) {
@@ -38,7 +42,7 @@ export class ExtensionController extends ServiceBase {
       'markdown',
     );
 
-    this._timeEntryService = new TimeEntryService(csvPath);
+    this._timeEntryService = new TimeEntryService(csvPath, inactivityTimeoutMs);
     this.registerDisposable(this._timeEntryService);
 
     vscode.window.onDidChangeWindowState(event => {

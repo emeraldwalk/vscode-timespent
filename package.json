@@ -48,6 +48,11 @@
             "storageDir": {
               "type": "string",
               "description": "Storage directory to save sqlite database."
+            },
+            "inactivityTimeoutMs": {
+              "type": "integer",
+              "description": "Inactivity timeout in milliseconds.",
+              "default": 60000
             }
           }
         }

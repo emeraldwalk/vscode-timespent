@@ -16,12 +16,11 @@ import {
 import { date, now } from '../utils/dateUtils';
 import { isTagEqual } from '../utils/tagUtils';
 
-const INACTIVITY_TIMEOUT_MS = 60000;
-
 export class TimeEntryService extends ServiceBase {
-  constructor(csvPath: string) {
+  constructor(csvPath: string, inactivityTimeoutMs: number) {
     super();
     this._csvPath = csvPath;
+    this._inactivityTimeoutMs = inactivityTimeoutMs;
 
     this.registerDisposable({
       dispose: () => {
@@ -33,6 +32,7 @@ export class TimeEntryService extends ServiceBase {
   }
 
   private readonly _csvPath: string;
+  private readonly _inactivityTimeoutMs: number;
   private _debounceTimeout?: NodeJS.Timeout;
   private _timeEntry: TimeEntry | null = null;
 
@@ -62,8 +62,8 @@ export class TimeEntryService extends ServiceBase {
       // switched to another vscode window. In cases where the user has just
       // switched to another app, this gives some cushion should the user switch
       // back to vscode before the timeout is reached.
-      this.storeEntry('activityTimeout', now() - INACTIVITY_TIMEOUT_MS);
-    }, INACTIVITY_TIMEOUT_MS);
+      this.storeEntry('activityTimeout', now() - this._inactivityTimeoutMs);
+    }, this._inactivityTimeoutMs);
   };
 
   showDailySummary = async (): Promise<QueryExecResult[]> => {

@@ -25,3 +25,4 @@ The following commands can be run from the command palette (`cmd+shift+p`, `ctrl
 ## Configuration Settings
 
 - `storageDir` - Optional storage directory path where the time tracking `.csv` file will be stored. Defaults to `.vscode/` folder in current workspace.
+- `inactivityTimeoutMs` - Optional inactivity timeout in milliseconds. Defaults to `60000`.
