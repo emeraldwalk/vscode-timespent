@@ -35,7 +35,7 @@ scripts/pre-release.sh 0.1.X
 #### Release
 
 ```sh
-vsce publish patch --allow-star-activation
+npx vsce publish patch --allow-star-activation
 git push
 git push --tags
 ```
