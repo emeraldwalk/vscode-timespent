@@ -25,6 +25,7 @@ Run the following script to do a pre-release:
 
 1. Update version number in `package.json` (probably can use npm version but need to investigate)
 1. Run `npm i` to update package-lock.
+1. Commit change so that tag is based on latest.
 1. Run `pre-release` script targetting new version.
 
 ```sh
@@ -33,6 +34,8 @@ scripts/pre-release.sh 0.1.X
 ```
 
 #### Release
+
+> Still pre-release. See pre-release section above for now.
 
 ```sh
 npx vsce publish patch --allow-star-activation
