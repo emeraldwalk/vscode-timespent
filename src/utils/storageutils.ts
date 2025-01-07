@@ -29,7 +29,7 @@ export function dailySummary(db: Database): QueryExecResult[] {
 }
 
 export function timeEntries(db: Database): QueryExecResult[] {
-  return db.exec(`SELECT 
+  return db.exec(`SELECT
     id,
     uid,
     workspacePath,
@@ -150,7 +150,9 @@ export function appendCsvRow(
     );
   }
 
-  const csvRow = row.map(v => (typeof v === 'string' ? `"${v}"` : v)).join(',');
+  const csvRow = row
+    .map(v => (typeof v === 'string' ? `"${v.replaceAll('"', '""')}"` : v))
+    .join(',');
   fs.appendFileSync(filePath, `${csvRow}\n`);
 }
 
